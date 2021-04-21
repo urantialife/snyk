@@ -2,7 +2,6 @@ import { DepGraphData } from '@snyk/dep-graph';
 import { SEVERITY } from '../snyk-test/common';
 import {
   LegalInstruction,
-  ReachablePaths,
   RemediationChanges,
 } from '../snyk-test/legacy';
 import { Options } from '../types';
@@ -73,14 +72,6 @@ export interface EnrichedVulnData extends RawVulnData {
   // backwards compatibility for cli only
   legalInstructions?: string;
   legalInstructionsArray?: LegalInstruction[];
-  reachability?: Reachability;
-  reachablePaths?: ReachablePaths;
-}
-
-enum Reachability {
-  FUNCTION = 'function',
-  PACKAGE = 'package',
-  NO_INFO = 'no-info',
 }
 
 export type VulnType = 'vuln' | 'license';
@@ -124,7 +115,6 @@ export interface RawVulnData {
   readonly exploit: RawExploitTypes;
   readonly license?: string;
   readonly proprietary?: boolean;
-  readonly iacDescription?: IacDescription;
   readonly nearestFixedInVersion?: string;
 }
 
@@ -148,13 +138,6 @@ export enum RawExploitTypes {
   PROOF_OF_CONCEPT = 'Proof of Concept',
   FUNCTIONAL = 'Functional',
   HIGH = 'High',
-}
-
-export interface IacDescription {
-  issue: string | null;
-  impact: string | null;
-  resolve: string | null;
-  references?: string[];
 }
 
 export interface VulnerableFunction {
