@@ -6,7 +6,9 @@ import { api } from '../../../../../lib/api-token';
 import request = require('../../../../../lib/request');
 import { CustomError } from '../../../../../lib/errors';
 
-export function getIacOrgSettings(): Promise<IacOrgSettings> {
+export function getIacOrgSettings(
+  overrideOrg?: string,
+): Promise<IacOrgSettings> {
   const payload: Payload = {
     method: 'get',
     url: config.API + '/iac-org-settings',
@@ -16,6 +18,12 @@ export function getIacOrgSettings(): Promise<IacOrgSettings> {
       authorization: `token ${api()}`,
     },
   };
+
+  if (overrideOrg) {
+    payload.body = {
+      org: overrideOrg,
+    };
+  }
 
   return new Promise((resolve, reject) => {
     request(payload, (error, res) => {

@@ -15,6 +15,7 @@ import { TestResult } from '../../../../lib/snyk-test/legacy';
 import { IacFileInDirectory } from '../../../../lib/types';
 import { applyCustomSeverities } from './org-settings/apply-custom-severities';
 import { getIacOrgSettings } from './org-settings/get-iac-org-settings';
+import config = require('../../../../lib/config');
 
 // this method executes the local processing engine and then formats the results to adapt with the CLI output.
 // the current version is dependent on files to be present locally which are not part of the source code.
@@ -32,7 +33,7 @@ export async function test(
   const filesToParse = await loadFiles(pathToScan, options);
   const { parsedFiles, failedFiles } = await parseFiles(filesToParse);
   const scannedFiles = await scanFiles(parsedFiles);
-  const iacOrgSettings = await getIacOrgSettings();
+  const iacOrgSettings = await getIacOrgSettings(config.org);
   const resultsWithCustomSeverities = await applyCustomSeverities(
     scannedFiles,
     iacOrgSettings.customPolicies,

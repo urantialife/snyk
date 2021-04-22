@@ -17,6 +17,7 @@ export interface PayloadBody {
   docker?: any;
   displayTargetFile?: string;
   target?: GitTarget | ContainerTarget | null;
+  org?: string;
 }
 
 export interface TestDependenciesRequest {
