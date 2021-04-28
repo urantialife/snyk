@@ -1,4 +1,5 @@
 import * as https from 'https';
+import { URL } from 'url';
 import { PackageAndVersion } from './types';
 
 export async function getPatches(
