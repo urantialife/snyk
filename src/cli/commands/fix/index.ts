@@ -44,7 +44,7 @@ async function fix(...args: MethodArgs): Promise<string> {
   );
   const { dryRun, quiet } = options;
   const { fixSummary, meta } = await snykFix.fix(results, { dryRun, quiet });
-  if (meta.fixed === 0) {
+  if (meta.failed > 0 && meta.fixed === 0) {
     throw new Error(fixSummary);
   }
   return fixSummary;
