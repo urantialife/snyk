@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as pathLib from 'path';
 import * as debugLib from 'debug';
+import { parse as parseToml } from 'toml';
 const endsWith = require('lodash.endswith');
 import { NoSupportedManifestsFoundError } from './errors';
 import { SupportedPackageManagers } from './package-managers';
@@ -64,6 +65,7 @@ export const AUTO_DETECTABLE_FILES: string[] = [
 ];
 
 // when file is specified with --file, we look it up here
+// this is also used when --all-projects flag is enabled and auto detection plugin is triggered
 const DETECTABLE_PACKAGE_MANAGERS: {
   [name: string]: SupportedPackageManagers;
 } = {
@@ -97,6 +99,22 @@ const DETECTABLE_PACKAGE_MANAGERS: {
   'pyproject.toml': 'poetry',
   'poetry.lock': 'poetry',
   'mix.exs': 'hex',
+};
+
+function inferPackageManagerFromPyProjectToml(file: string) {
+  const data = fs.readFileSync(file, { encoding: 'utf8' });
+  const parsedData = parseToml(data);
+
+  if (parsedData?.tool?.poetry) {
+    return 'poetry';
+  }
+
+  return null;
+}
+
+// these filenames do not guarantee the usage of a package manager yet, and further checks are required to determine correct package manager
+const NON_DETERMINISTIC_BASENAMES = {
+  'pyproject.toml': inferPackageManagerFromPyProjectToml,
 };
 
 export function isPathToPackageFile(path) {
@@ -177,10 +195,12 @@ export function detectPackageFile(root) {
   debug('no package file found in ' + root);
 }
 
-export function detectPackageManagerFromFile(
-  file: string,
-): SupportedPackageManagers {
-  let key = pathLib.basename(file);
+function isBasenameNonDeterministic(basename: string): boolean {
+  return basename in NON_DETERMINISTIC_BASENAMES;
+}
+
+export function detectPackageManagerFromFile(path: string) {
+  let key = pathLib.basename(path);
 
   // TODO: fix this to use glob matching instead
   // like *.gemspec
@@ -198,8 +218,19 @@ export function detectPackageManagerFromFile(
 
   if (!(key in DETECTABLE_PACKAGE_MANAGERS)) {
     // we throw and error here because the file was specified by the user
-    throw new Error('Could not detect package manager for file: ' + file);
+    throw new Error('Could not detect package manager for file: ' + path);
   }
+
+  if (isBasenameNonDeterministic(key)) {
+    const detectedPackage = NON_DETERMINISTIC_BASENAMES[key](path);
+
+    if (!detectedPackage) {
+      throw new Error('Could not detect package manager for file: ' + path);
+    }
+
+    return detectedPackage;
+  }
+
   return DETECTABLE_PACKAGE_MANAGERS[key];
 }
 

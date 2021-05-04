@@ -44,9 +44,7 @@ export async function getMultiPluginResult(
   for (const targetFile of targetFiles) {
     const optionsClone = cloneDeep(options);
     optionsClone.file = path.relative(root, targetFile);
-    optionsClone.packageManager = detectPackageManagerFromFile(
-      path.basename(targetFile),
-    );
+    optionsClone.packageManager = detectPackageManagerFromFile(targetFile);
     try {
       const inspectRes = await getSinglePluginResult(
         root,
